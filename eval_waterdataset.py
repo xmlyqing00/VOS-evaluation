@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 import os
 import sys
 from time import time
@@ -6,23 +5,22 @@ import argparse
 
 import numpy as np
 import pandas as pd
-from davis2017.evaluation import DAVISEvaluation
+from WaterDataset.evaluation import Evaluation
 
 default_davis_path = '/path/to/the/folder/DAVIS'
+default_water_path = '/Ship01/water/eval'
+default_results_path = '/Ship01/water/results'
 
 time_start = time()
 parser = argparse.ArgumentParser()
-parser.add_argument('--davis_path', type=str, help='Path to the DAVIS folder containing the JPEGImages, Annotations, '
-                                                   'ImageSets, Annotations_unsupervised folders',
-                    required=False, default=default_davis_path)
-parser.add_argument('--set', type=str, help='Subset to evaluate the results', default='val')
+parser.add_argument('--path', type=str, help='Path to the water folder.',
+                    required=False, default=default_water_path)
 parser.add_argument('--task', type=str, help='Task to evaluate the results', default='unsupervised',
                     choices=['semi-supervised', 'unsupervised'])
-parser.add_argument('--results_path', type=str, help='Path to the folder containing the sequences folders',
-                    required=True)
+parser.add_argument('--results_path', type=str, help='Path to the folder containing the sequences folders', required=False, default=)
 args, _ = parser.parse_known_args()
-csv_name_global = f'global_results-{args.set}.csv'
-csv_name_per_sequence = f'per-sequence_results-{args.set}.csv'
+csv_name_global = 'global_results.csv'
+csv_name_per_sequence = 'per-sequence_results.csv'
 
 # Check if the method has been evaluated before, if so read the results, otherwise compute the results
 csv_name_global_path = os.path.join(args.results_path, csv_name_global)
@@ -34,7 +32,7 @@ if os.path.exists(csv_name_global_path) and os.path.exists(csv_name_per_sequence
 else:
     print(f'Evaluating sequences for the {args.task} task...')
     # Create dataset and evaluate
-    dataset_eval = DAVISEvaluation(davis_root=args.davis_path, task=args.task, gt_set=args.set)
+    dataset_eval = Evaluation(davis_root=args.davis_path, task=args.task, gt_set=args.set)
     metrics_res = dataset_eval.evaluate(args.results_path)
     J, F = metrics_res['J'], metrics_res['F']
 
