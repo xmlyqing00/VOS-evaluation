@@ -7,7 +7,7 @@ import numpy as np
 from WaterDataset.dataset import WaterDataset
 from davis2017.metrics import db_eval_boundary, db_eval_iou
 from davis2017 import utils
-from davis2017.results import Results
+from WaterDataset.results import Results
 from scipy.optimize import linear_sum_assignment
 
 
@@ -79,12 +79,13 @@ class Evaluation(object):
         # Sweep all sequences
         results = Results(root_dir=res_path)
         for seq in tqdm(list(self.dataset.get_sequences())):
-            all_gt_masks, all_void_masks, all_masks_id = self.dataset.get_all_masks(seq, True)
+            all_gt_masks, all_masks_id = self.dataset.get_all_masks(seq)
             if self.task == 'semi-supervised':
-                all_gt_masks, all_masks_id = all_gt_masks[:, 1:-1, :, :], all_masks_id[1:-1]
+                all_gt_masks, all_masks_id = all_gt_masks[:, 1:, :, :], all_masks_id[1:]
             all_res_masks = results.read_masks(seq, all_masks_id)
             if self.task == 'unsupervised':
-                j_metrics_res, f_metrics_res = self._evaluate_unsupervised(all_gt_masks, all_res_masks, all_void_masks, metric)
+                # j_metrics_res, f_metrics_res = self._evaluate_unsupervised(all_gt_masks, all_res_masks, metric)
+                pass
             elif self.task == 'semi-supervised':
                 j_metrics_res, f_metrics_res = self._evaluate_semisupervised(all_gt_masks, all_res_masks, None, metric)
             for ii in range(all_gt_masks.shape[0]):

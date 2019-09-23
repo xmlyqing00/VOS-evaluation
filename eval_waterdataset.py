@@ -7,33 +7,37 @@ import numpy as np
 import pandas as pd
 from WaterDataset.evaluation import Evaluation
 
-default_davis_path = '/path/to/the/folder/DAVIS'
-default_water_path = '/Ship01/water/eval'
-default_results_path = '/Ship01/water/results'
+default_water_path = '/Ship01/Dataset/water'
+default_results_path = '/Ship01/Dataset/water/results'
 
 time_start = time()
 parser = argparse.ArgumentParser()
-parser.add_argument('--path', type=str, help='Path to the water folder.',
-                    required=False, default=default_water_path)
-parser.add_argument('--task', type=str, help='Task to evaluate the results', default='unsupervised',
-                    choices=['semi-supervised', 'unsupervised'])
-parser.add_argument('--results_path', type=str, help='Path to the folder containing the sequences folders', required=False, default=)
+parser.add_argument('--path', type=str, required=False, default=default_water_path,
+                    help='Path to the water folder.',)
+parser.add_argument('--task', type=str, default='semi-supervised', choices=['semi-supervised', 'unsupervised'],
+                    help='Task to evaluate the results', )
+parser.add_argument('--method', type=str, required=True,
+                    help='Method name.')
+parser.add_argument('--update', action='store_true',
+                    help='Recompute the performance results.' )
 args, _ = parser.parse_known_args()
 csv_name_global = 'global_results.csv'
 csv_name_per_sequence = 'per-sequence_results.csv'
+method_results_path = os.path.join(default_results_path, args.method)
+print('Evaluate', args.method)
 
 # Check if the method has been evaluated before, if so read the results, otherwise compute the results
-csv_name_global_path = os.path.join(args.results_path, csv_name_global)
-csv_name_per_sequence_path = os.path.join(args.results_path, csv_name_per_sequence)
-if os.path.exists(csv_name_global_path) and os.path.exists(csv_name_per_sequence_path):
+csv_name_global_path = os.path.join(method_results_path, csv_name_global)
+csv_name_per_sequence_path = os.path.join(method_results_path, csv_name_per_sequence)
+if not args.update and os.path.exists(csv_name_global_path) and os.path.exists(csv_name_per_sequence_path):
     print('Using precomputed results...')
     table_g = pd.read_csv(csv_name_global_path)
     table_seq = pd.read_csv(csv_name_per_sequence_path)
 else:
     print(f'Evaluating sequences for the {args.task} task...')
     # Create dataset and evaluate
-    dataset_eval = Evaluation(davis_root=args.davis_path, task=args.task, gt_set=args.set)
-    metrics_res = dataset_eval.evaluate(args.results_path)
+    dataset_eval = Evaluation(root_folder=args.path, task=args.task)
+    metrics_res = dataset_eval.evaluate(method_results_path)
     J, F = metrics_res['J'], metrics_res['F']
 
     # Generate dataframe for the general results
@@ -58,9 +62,10 @@ else:
     print(f'Per-sequence results saved in {csv_name_per_sequence_path}')
 
 # Print the results
-sys.stdout.write(f"--------------------------- Global results for {args.set} ---------------------------\n")
+sys.stdout.write(f"------------------------ Global results for {args.method} ------------------------\n")
 print(table_g.to_string(index=False))
-sys.stdout.write(f"\n---------- Per sequence results for {args.set} ----------\n")
+sys.stdout.write(f"\n---------- Per sequence results for {args.method} ----------\n")
 print(table_seq.to_string(index=False))
 total_time = time() - time_start
 sys.stdout.write('\nTotal time:' + str(total_time))
+print('')
