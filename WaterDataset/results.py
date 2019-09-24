@@ -24,7 +24,7 @@ class Results(object):
 
     def read_masks(self, sequence, masks_id):
         
-        img_list = np.sort(glob(os.path.join(self.root_dir, sequence, '*.png'))).tolist()
+        img_list = np.sort(glob(os.path.join(self.root_dir, sequence, '[0-9]*.png'))).tolist()
         # if len(img_list) == 0:
             # img_list = np.sort(glob(os.path.join(self.root_dir, sequence, '*.jpg'))).tolist()
         # print(os.path.join(self.root_dir, sequence, '*.png'))
