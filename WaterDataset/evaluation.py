@@ -12,7 +12,7 @@ from scipy.optimize import linear_sum_assignment
 
 
 class Evaluation(object):
-    def __init__(self, root_folder, task, sequences='all'):
+    def __init__(self, root_folder, task, sequences='all', filelist=None):
         """
         Class to evaluate DAVIS sequences from a certain set and for a certain task
         :param davis_root: Path to the DAVIS folder that contains JPEGImages, Annotations, etc. folders.
@@ -21,7 +21,7 @@ class Evaluation(object):
         """
         self.root_folder = root_folder
         self.task = task
-        self.dataset = WaterDataset(root_folder=root_folder, task=task, sequences=sequences)
+        self.dataset = WaterDataset(root_folder=root_folder, task=task, sequences=sequences, filelist=filelist)
 
     @staticmethod
     def _evaluate_semisupervised(all_gt_masks, all_res_masks, all_void_masks, metric):

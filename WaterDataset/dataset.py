@@ -10,7 +10,7 @@ class WaterDataset(object):
     DATASET_WEB = 'https://google.com'
     VOID_LABEL = 255
 
-    def __init__(self, root_folder, task='semi-supervised', sequences='all', resolution=(640, 480)):
+    def __init__(self, root_folder, task='semi-supervised', sequences='all', filelist=None, resolution=(640, 480)):
         """
         Class to read the DAVIS dataset
         :param root_folder: Path to the DAVIS folder that contains JPEGImages, Annotations, etc. folders.
@@ -31,17 +31,18 @@ class WaterDataset(object):
         self._check_directories()
 
         if sequences == 'all':
-            with open(os.path.join(self.root_folder, 'eval.txt'), 'r') as f:
+            with open(os.path.join(self.root_folder, filelist), 'r') as f:
                 tmp = f.readlines()
             sequences_names = [x.strip() for x in tmp]
         else:
             sequences_names = sequences if isinstance(sequences, list) else [sequences]
         self.sequences = defaultdict(dict)
 
-        try:
-            sequences_names.remove('')
-        except ValueError as e:
-            pass
+        while True:
+            try:
+                sequences_names.remove('')
+            except ValueError as e:
+                break
         print('Seq names:', sequences_names)
 
         for seq in sequences_names:
@@ -60,11 +61,11 @@ class WaterDataset(object):
 
     def get_frames(self, sequence):
         for img_path in self.sequences[sequence]['images']:
-            print(img_path)
+            # print(img_path)
             img = cv2.resize(cv2.imread(img_path), self.resolution)
             mask_path = img_path.replace('jpg', 'png').replace('test_videos', 'test_annots')
-            print(mask_path)
-            print(mask_path in self.sequences[sequence]['masks'])
+            # print(mask_path)
+            # print(mask_path in self.sequences[sequence]['masks'])
             if mask_path in self.sequences[sequence]['masks']:
                 mask = cv2.resize(cv2.imread(mask_path), self.resolution)
             else:

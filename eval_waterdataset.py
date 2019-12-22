@@ -18,12 +18,14 @@ parser.add_argument('--task', type=str, default='semi-supervised', choices=['sem
                     help='Task to evaluate the results', )
 parser.add_argument('--method', type=str, required=True,
                     help='Method name.')
+parser.add_argument('--filelist', type=str, default='eval_all.txt',
+                    help='Method name.')
 parser.add_argument('--update', action='store_true',
                     help='Recompute the performance results.' )
 args, _ = parser.parse_known_args()
 csv_name_global = 'global_results.csv'
 csv_name_per_sequence = 'per-sequence_results.csv'
-method_results_path = os.path.join(default_results_path, args.method)
+method_results_path = os.path.join(default_results_path, args.method + '_segs')
 print('Evaluate', args.method)
 
 # Check if the method has been evaluated before, if so read the results, otherwise compute the results
@@ -36,7 +38,7 @@ if not args.update and os.path.exists(csv_name_global_path) and os.path.exists(c
 else:
     print(f'Evaluating sequences for the {args.task} task...')
     # Create dataset and evaluate
-    dataset_eval = Evaluation(root_folder=args.path, task=args.task)
+    dataset_eval = Evaluation(root_folder=args.path, task=args.task, filelist=args.filelist)
     metrics_res = dataset_eval.evaluate(method_results_path)
     J, F = metrics_res['J'], metrics_res['F']
 
